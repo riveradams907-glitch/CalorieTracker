@@ -12,11 +12,12 @@ const StatsContext = createContext<StatsContextType | undefined>(undefined);
 
 const DEFAULT_STATS: UserStats = {
   age: 30,
-  height: 170,
-  weight: 70,
+  height: 170, // cm
+  weight: 70, // kg
   gender: 'male',
   activityLevel: 'moderate',
   goal: 'maintain',
+  unitSystem: 'metric',
 };
 
 export function StatsProvider({ children }: { children: ReactNode }) {

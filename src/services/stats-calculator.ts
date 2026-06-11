@@ -1,10 +1,11 @@
 export interface UserStats {
   age: number;
-  height: number; // cm
-  weight: number; // kg
+  height: number; // stored in cm internally
+  weight: number; // stored in kg internally
   gender: 'male' | 'female';
   activityLevel: 'sedentary' | 'light' | 'moderate' | 'active' | 'veryActive';
   goal: 'lose' | 'maintain' | 'gain';
+  unitSystem: 'metric' | 'imperial'; // metric (cm/kg) or imperial (ft/lbs)
 }
 
 export interface CalculatedGoals {
@@ -15,6 +16,36 @@ export interface CalculatedGoals {
   bmr: number;
   tdee: number;
 }
+
+// Unit conversion utilities
+export const UnitConverter = {
+  // Height conversions
+  cmToFeet: (cm: number): { feet: number; inches: number } => {
+    const totalInches = cm / 2.54;
+    const feet = Math.floor(totalInches / 12);
+    const inches = Math.round(totalInches % 12);
+    return { feet, inches };
+  },
+
+  feetToFeetAndInches: (feet: number): { feet: number; inches: number } => {
+    const wholeFeeet = Math.floor(feet);
+    const inches = Math.round((feet - wholeFeeet) * 12);
+    return { feet: wholeFeeet, inches };
+  },
+
+  feetAndInchesToCm: (feet: number, inches: number): number => {
+    return Math.round((feet * 12 + inches) * 2.54);
+  },
+
+  // Weight conversions
+  kgToLbs: (kg: number): number => {
+    return Math.round(kg * 2.20462);
+  },
+
+  lbsToKg: (lbs: number): number => {
+    return Math.round(lbs / 2.20462 * 100) / 100; // Round to 2 decimals
+  },
+};
 
 export const StatsCalculator = {
   // Calculate Basal Metabolic Rate using Mifflin-St Jeor equation

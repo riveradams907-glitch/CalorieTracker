@@ -8,7 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 import { useAuth } from '@/context/auth-context';
 import { useSettings } from '@/context/settings-context';
 import { useStats } from '@/context/stats-context';
-import { StatsCalculator } from '@/services/stats-calculator';
+import { StatsCalculator, UnitConverter } from '@/services/stats-calculator';
 import { Spacing } from '@/constants/theme';
 
 export default function ProfileScreen() {
@@ -20,20 +20,43 @@ export default function ProfileScreen() {
 
   // Form state
   const [age, setAge] = useState(stats?.age.toString() || '30');
-  const [height, setHeight] = useState(stats?.height.toString() || '170');
+  const [unitSystem, setUnitSystem] = useState(stats?.unitSystem || 'metric');
+
+  // Height state - convert from cm to feet/inches for display if imperial
+  const heightDisplay = unitSystem === 'metric'
+    ? stats?.height.toString() || '170'
+    : (() => {
+        const { feet, inches } = UnitConverter.cmToFeet(stats?.height || 170);
+        return `${feet}'${inches}`;
+      })();
+  const [heightMetric, setHeightMetric] = useState(stats?.height.toString() || '170');
+  const [heightFeet, setHeightFeet] = useState('5');
+  const [heightInches, setHeightInches] = useState('7');
+
+  // Weight state - convert from kg to lbs for display if imperial
   const [weight, setWeight] = useState(stats?.weight.toString() || '70');
   const [gender, setGender] = useState(stats?.gender || 'male');
   const [activityLevel, setActivityLevel] = useState(stats?.activityLevel || 'moderate');
   const [goal, setGoal] = useState(stats?.goal || 'maintain');
 
   const handleSaveStats = () => {
+    // Convert height and weight to metric (cm/kg) for storage
+    let heightCm = parseInt(heightMetric, 10) || 170;
+    let weightKg = parseFloat(weight) || 70;
+
+    if (unitSystem === 'imperial') {
+      heightCm = UnitConverter.feetAndInchesToCm(parseInt(heightFeet, 10) || 5, parseInt(heightInches, 10) || 7);
+      weightKg = UnitConverter.lbsToKg(parseFloat(weight) || 154);
+    }
+
     const newStats = {
       age: parseInt(age, 10) || 30,
-      height: parseInt(height, 10) || 170,
-      weight: parseInt(weight, 10) || 70,
+      height: heightCm,
+      weight: weightKg,
       gender: gender as 'male' | 'female',
       activityLevel: activityLevel as 'sedentary' | 'light' | 'moderate' | 'active' | 'veryActive',
       goal: goal as 'lose' | 'maintain' | 'gain',
+      unitSystem: unitSystem as 'metric' | 'imperial',
     };
 
     updateStats(newStats);
@@ -108,27 +131,78 @@ export default function ProfileScreen() {
                   />
                 </ThemedView>
 
+                {/* Unit System Toggle */}
+                <ThemedView style={styles.inputGroup}>
+                  <ThemedText style={styles.label}>Unit System</ThemedText>
+                  <View style={styles.unitToggle}>
+                    <TouchableOpacity
+                      style={[styles.unitButton, unitSystem === 'metric' && styles.unitButtonActive]}
+                      onPress={() => setUnitSystem('metric')}
+                    >
+                      <ThemedText style={styles.unitButtonText}>📏 Metric</ThemedText>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.unitButton, unitSystem === 'imperial' && styles.unitButtonActive]}
+                      onPress={() => setUnitSystem('imperial')}
+                    >
+                      <ThemedText style={styles.unitButtonText}>🗽 Imperial</ThemedText>
+                    </TouchableOpacity>
+                  </View>
+                </ThemedView>
+
                 {/* Height */}
                 <ThemedView style={styles.inputGroup}>
-                  <ThemedText style={styles.label}>Height (cm)</ThemedText>
-                  <TextInput
-                    style={styles.input}
-                    value={height}
-                    onChangeText={setHeight}
-                    keyboardType="number-pad"
-                    placeholder="170"
-                  />
+                  {unitSystem === 'metric' ? (
+                    <>
+                      <ThemedText style={styles.label}>Height (cm)</ThemedText>
+                      <TextInput
+                        style={styles.input}
+                        value={heightMetric}
+                        onChangeText={setHeightMetric}
+                        keyboardType="number-pad"
+                        placeholder="170"
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <ThemedText style={styles.label}>Height (feet & inches)</ThemedText>
+                      <View style={styles.heightRow}>
+                        <View style={styles.heightInput}>
+                          <ThemedText style={styles.smallLabel}>Feet</ThemedText>
+                          <TextInput
+                            style={styles.input}
+                            value={heightFeet}
+                            onChangeText={setHeightFeet}
+                            keyboardType="number-pad"
+                            placeholder="5"
+                          />
+                        </View>
+                        <View style={styles.heightInput}>
+                          <ThemedText style={styles.smallLabel}>Inches</ThemedText>
+                          <TextInput
+                            style={styles.input}
+                            value={heightInches}
+                            onChangeText={setHeightInches}
+                            keyboardType="number-pad"
+                            placeholder="7"
+                          />
+                        </View>
+                      </View>
+                    </>
+                  )}
                 </ThemedView>
 
                 {/* Weight */}
                 <ThemedView style={styles.inputGroup}>
-                  <ThemedText style={styles.label}>Weight (kg)</ThemedText>
+                  <ThemedText style={styles.label}>
+                    Weight ({unitSystem === 'metric' ? 'kg' : 'lbs'})
+                  </ThemedText>
                   <TextInput
                     style={styles.input}
                     value={weight}
                     onChangeText={setWeight}
                     keyboardType="decimal-pad"
-                    placeholder="70"
+                    placeholder={unitSystem === 'metric' ? '70' : '154'}
                   />
                 </ThemedView>
 
@@ -204,11 +278,22 @@ export default function ProfileScreen() {
                 </ThemedView>
                 <ThemedView style={styles.statRow}>
                   <ThemedText style={styles.label}>Height</ThemedText>
-                  <ThemedText style={styles.value}>{stats?.height} cm</ThemedText>
+                  <ThemedText style={styles.value}>
+                    {stats?.unitSystem === 'imperial' && stats?.height
+                      ? (() => {
+                          const { feet, inches } = UnitConverter.cmToFeet(stats.height);
+                          return `${feet}'${inches}"`;
+                        })()
+                      : `${stats?.height} cm`}
+                  </ThemedText>
                 </ThemedView>
                 <ThemedView style={styles.statRow}>
                   <ThemedText style={styles.label}>Weight</ThemedText>
-                  <ThemedText style={styles.value}>{stats?.weight} kg</ThemedText>
+                  <ThemedText style={styles.value}>
+                    {stats?.unitSystem === 'imperial' && stats?.weight
+                      ? `${UnitConverter.kgToLbs(stats.weight)} lbs`
+                      : `${stats?.weight} kg`}
+                  </ThemedText>
                 </ThemedView>
                 <ThemedView style={styles.statRow}>
                   <ThemedText style={styles.label}>Gender</ThemedText>
@@ -351,6 +436,38 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
     backgroundColor: '#fff',
+  },
+  unitToggle: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+  },
+  unitButton: {
+    flex: 1,
+    paddingVertical: Spacing.two,
+    borderRadius: Spacing.two,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    alignItems: 'center',
+  },
+  unitButtonActive: {
+    backgroundColor: '#667eea',
+    borderColor: '#667eea',
+  },
+  unitButtonText: {
+    fontWeight: '500',
+  },
+  heightRow: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+  },
+  heightInput: {
+    flex: 1,
+  },
+  smallLabel: {
+    fontSize: 11,
+    opacity: 0.6,
+    fontWeight: '600',
+    marginBottom: Spacing.one,
   },
   genderButtons: {
     flexDirection: 'row',
