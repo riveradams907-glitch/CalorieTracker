@@ -169,48 +169,49 @@ export default function HomeScreen() {
           <ThemedView style={styles.logSection}>
             <ThemedText style={styles.logSectionTitle}>📋 Today's Log</ThemedText>
 
-          {todayEntries.length === 0 ? (
-            <ThemedView style={styles.emptyState}>
-              <ThemedText style={styles.emptyEmoji}>🍽️</ThemedText>
-              <ThemedText style={styles.emptyText}>Your plate is empty</ThemedText>
-              <ThemedText style={styles.emptySubtext}>Time to fuel your workout!</ThemedText>
-            </ThemedView>
-          ) : (
-            <>
-              <FlatList
-                scrollEnabled={false}
-                data={todayEntries}
-                keyExtractor={item => item.id}
-                renderItem={({ item }) => (
-                  <ThemedView style={styles.entryItem}>
-                    <ThemedView style={styles.entryLeft}>
-                      <ThemedView style={styles.entryIcon}>
-                        <ThemedText style={styles.entryIconEmoji}>🍜</ThemedText>
+            {todayEntries.length === 0 ? (
+              <ThemedView style={styles.emptyState}>
+                <ThemedText style={styles.emptyEmoji}>🍽️</ThemedText>
+                <ThemedText style={styles.emptyText}>Your plate is empty</ThemedText>
+                <ThemedText style={styles.emptySubtext}>Time to fuel your workout!</ThemedText>
+              </ThemedView>
+            ) : (
+              <>
+                <FlatList
+                  scrollEnabled={false}
+                  data={todayEntries}
+                  keyExtractor={item => item.id}
+                  renderItem={({ item }) => (
+                    <ThemedView style={styles.entryItem}>
+                      <ThemedView style={styles.entryLeft}>
+                        <ThemedView style={styles.entryIcon}>
+                          <ThemedText style={styles.entryIconEmoji}>🍜</ThemedText>
+                        </ThemedView>
+                        <ThemedView style={styles.entryDetails}>
+                          <ThemedText style={styles.entryName}>{item.name}</ThemedText>
+                          <ThemedText style={styles.entryMacros}>
+                            P: {Math.round(item.protein || 0)}g • C: {Math.round(item.carbs || 0)}g • F: {Math.round(item.fat || 0)}g
+                          </ThemedText>
+                          <ThemedText style={styles.entryTime}>
+                            {new Date(item.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                          </ThemedText>
+                        </ThemedView>
                       </ThemedView>
-                      <ThemedView style={styles.entryDetails}>
-                        <ThemedText style={styles.entryName}>{item.name}</ThemedText>
-                        <ThemedText style={styles.entryMacros}>
-                          P: {Math.round(item.protein || 0)}g • C: {Math.round(item.carbs || 0)}g • F: {Math.round(item.fat || 0)}g
-                        </ThemedText>
-                        <ThemedText style={styles.entryTime}>
-                          {new Date(item.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                        </ThemedText>
+                      <ThemedView style={styles.entryRight}>
+                        <ThemedText style={styles.entryCalories}>{item.calories}</ThemedText>
+                        <TouchableOpacity
+                          style={styles.deleteButton}
+                          onPress={() => handleDeleteEntry(item.id)}
+                        >
+                          <ThemedText style={styles.deleteButtonText}>×</ThemedText>
+                        </TouchableOpacity>
                       </ThemedView>
                     </ThemedView>
-                    <ThemedView style={styles.entryRight}>
-                      <ThemedText style={styles.entryCalories}>{item.calories}</ThemedText>
-                      <TouchableOpacity
-                        style={styles.deleteButton}
-                        onPress={() => handleDeleteEntry(item.id)}
-                      >
-                        <ThemedText style={styles.deleteButtonText}>×</ThemedText>
-                      </TouchableOpacity>
-                    </ThemedView>
-                  </ThemedView>
-                )}
-              />
-            </>
-          )}
+                  )}
+                />
+              </>
+            )}
+          </ThemedView>
         </ScrollView>
       </SafeAreaView>
     </ThemedView>
