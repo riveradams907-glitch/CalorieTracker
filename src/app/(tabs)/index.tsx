@@ -53,23 +53,34 @@ export default function HomeScreen() {
     return Math.min((value / goal) * 100, 100);
   };
 
+  const getMotivationalMessage = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return '🌅 Start strong today!';
+    if (hour < 17) return '💪 Keep the momentum!';
+    return '🌙 Finish the day right!';
+  };
+
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView showsVerticalScrollIndicator={false}>
-          {/* Header */}
-          <ThemedView style={styles.header}>
-            <ThemedView>
-              <ThemedText style={styles.greeting}>Hi, {user?.name.split(' ')[0]}! 👋</ThemedText>
-              <ThemedText style={styles.date}>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</ThemedText>
+          {/* Fitness Hero Banner */}
+          <ThemedView style={styles.heroBanner}>
+            <ThemedView style={styles.heroContent}>
+              <ThemedText style={styles.heroMessage}>{getMotivationalMessage()}</ThemedText>
+              <ThemedText style={styles.heroName}>{user?.name.split(' ')[0]}</ThemedText>
+              <ThemedText style={styles.heroSubtitle}>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</ThemedText>
+            </ThemedView>
+            <ThemedView style={styles.heroEmoji}>
+              <ThemedText style={styles.heroBigEmoji}>🏋️</ThemedText>
             </ThemedView>
           </ThemedView>
 
-          {/* Main Calorie Card */}
+          {/* Main Calorie Card - Enhanced */}
           <ThemedView style={styles.calorieCard}>
             <ThemedView style={styles.calorieTop}>
               <ThemedView>
-                <ThemedText style={styles.calorieLabel}>Daily Calories</ThemedText>
+                <ThemedText style={styles.calorieLabel}>ENERGY BURNED TODAY</ThemedText>
                 <ThemedView style={styles.calorieValues}>
                   <ThemedText style={styles.calorieMain}>{totalCalories}</ThemedText>
                   <ThemedText style={styles.calorieGoal}>/ {settings.dailyCalorieGoal}</ThemedText>
@@ -80,7 +91,7 @@ export default function HomeScreen() {
               </ThemedView>
             </ThemedView>
 
-            {/* Progress Bar */}
+            {/* Enhanced Progress Bar */}
             <View style={styles.progressBar}>
               <View style={[styles.progressFill, { width: `${caloriePercentage}%` }]} />
             </View>
@@ -88,14 +99,48 @@ export default function HomeScreen() {
             {/* Remaining Calories */}
             <ThemedView style={styles.calorieFooter}>
               <ThemedText style={styles.remaining}>
-                {remainingCalories > 0 ? `${Math.round(remainingCalories)} calories left` : '✓ Goal reached!'}
+                {remainingCalories > 0 ? `${Math.round(remainingCalories)} left to crush` : '✓ Goal achieved!'}
               </ThemedText>
               <ThemedText style={styles.percentage}>{Math.round(caloriePercentage)}%</ThemedText>
             </ThemedView>
           </ThemedView>
 
-          {/* Macros Section */}
-          <ThemedText style={styles.sectionTitle}>Macronutrients</ThemedText>
+          {/* Quick Stats Cards */}
+          <ThemedView style={styles.statsRow}>
+            <StatCard label="Protein" value={Math.round(macros.protein)} goal={settings.proteinGoal} emoji="🥚" bgColor="#FF6B6B" />
+            <StatCard label="Carbs" value={Math.round(macros.carbs)} goal={settings.carbsGoal} emoji="🌾" bgColor="#4ECDC4" />
+            <StatCard label="Fat" value={Math.round(macros.fat)} goal={settings.fatGoal} emoji="🥑" bgColor="#FFE66D" />
+          </ThemedView>
+
+          {/* Fitness Action Section */}
+          <ThemedView style={styles.actionSection}>
+            <ThemedText style={styles.actionSectionTitle}>Quick Actions</ThemedText>
+            <ThemedView style={styles.actionButtons}>
+              <TouchableOpacity
+                style={[styles.actionButton, styles.addFoodButton]}
+                onPress={() => router.push('/(tabs)/add-food')}
+              >
+                <ThemedText style={styles.actionButtonEmoji}>➕</ThemedText>
+                <ThemedView>
+                  <ThemedText style={styles.actionButtonText}>Add Food</ThemedText>
+                  <ThemedText style={styles.actionButtonSubtext}>Search database</ThemedText>
+                </ThemedView>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionButton, styles.photoButton]}
+                onPress={() => router.push('/(tabs)/photo')}
+              >
+                <ThemedText style={styles.actionButtonEmoji}>📸</ThemedText>
+                <ThemedView>
+                  <ThemedText style={styles.actionButtonText}>Scan Meal</ThemedText>
+                  <ThemedText style={styles.actionButtonSubtext}>AI powered</ThemedText>
+                </ThemedView>
+              </TouchableOpacity>
+            </ThemedView>
+          </ThemedView>
+
+          {/* Macros Breakdown Section */}
+          <ThemedText style={styles.macroSectionTitle}>Macronutrients Breakdown</ThemedText>
           <ThemedView style={styles.macrosGrid}>
             <MacroCard
               label="Protein"
@@ -120,32 +165,15 @@ export default function HomeScreen() {
             />
           </ThemedView>
 
-          {/* Action Buttons */}
-          <ThemedView style={styles.actionButtons}>
-            <TouchableOpacity
-              style={[styles.actionButton, styles.addFoodButton]}
-              onPress={() => router.push('/(tabs)/add-food')}
-            >
-              <ThemedText style={styles.actionButtonEmoji}>➕</ThemedText>
-              <ThemedText style={styles.actionButtonText}>Add Food</ThemedText>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.actionButton, styles.photoButton]}
-              onPress={() => router.push('/(tabs)/photo')}
-            >
-              <ThemedText style={styles.actionButtonEmoji}>📸</ThemedText>
-              <ThemedText style={styles.actionButtonText}>Scan</ThemedText>
-            </TouchableOpacity>
-          </ThemedView>
-
-          {/* Today's Entries */}
-          <ThemedText style={styles.sectionTitle}>Today's Log</ThemedText>
+          {/* Today's Log Section */}
+          <ThemedView style={styles.logSection}>
+            <ThemedText style={styles.logSectionTitle}>📋 Today's Log</ThemedText>
 
           {todayEntries.length === 0 ? (
             <ThemedView style={styles.emptyState}>
               <ThemedText style={styles.emptyEmoji}>🍽️</ThemedText>
-              <ThemedText style={styles.emptyText}>No food logged yet</ThemedText>
-              <ThemedText style={styles.emptySubtext}>Start tracking your meals!</ThemedText>
+              <ThemedText style={styles.emptyText}>Your plate is empty</ThemedText>
+              <ThemedText style={styles.emptySubtext}>Time to fuel your workout!</ThemedText>
             </ThemedView>
           ) : (
             <>
@@ -187,6 +215,25 @@ export default function HomeScreen() {
       </SafeAreaView>
     </ThemedView>
   );
+        </ScrollView>
+      </SafeAreaView>
+    </ThemedView>
+  );
+}
+
+function StatCard({ label, value, goal, emoji, bgColor }: any) {
+  const percentage = Math.min((value / goal) * 100, 100);
+
+  return (
+    <ThemedView style={[styles.statCard, { backgroundColor: bgColor }]}>
+      <ThemedText style={styles.statEmoji}>{emoji}</ThemedText>
+      <ThemedText style={styles.statValue}>{value}g</ThemedText>
+      <ThemedText style={styles.statLabel}>{label}</ThemedText>
+      <ThemedView style={styles.statMini}>
+        <ThemedText style={styles.statMiniText}>{Math.round(percentage)}%</ThemedText>
+      </ThemedView>
+    </ThemedView>
+  );
 }
 
 function MacroCard({ label, current, goal, emoji, color }: any) {
@@ -223,29 +270,58 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: Spacing.four,
   },
-  header: {
+  heroBanner: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    borderRadius: Spacing.three,
+    padding: Spacing.four,
     marginBottom: Spacing.four,
     marginTop: Spacing.two,
+    shadowColor: '#667eea',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 8,
   },
-  greeting: {
-    fontSize: 28,
-    fontWeight: '700',
+  heroContent: {
+    flex: 1,
+  },
+  heroMessage: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+    opacity: 0.9,
     marginBottom: Spacing.one,
   },
-  date: {
-    fontSize: 14,
-    opacity: 0.6,
+  heroName: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#fff',
+    marginBottom: Spacing.half,
+  },
+  heroSubtitle: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontWeight: '500',
+  },
+  heroEmoji: {
+    marginLeft: Spacing.three,
+  },
+  heroBigEmoji: {
+    fontSize: 48,
   },
   calorieCard: {
     backgroundColor: '#667eea',
     borderRadius: Spacing.three,
     padding: Spacing.four,
-    marginBottom: Spacing.four,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
+    marginBottom: Spacing.three,
+    shadowColor: '#667eea',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   calorieTop: {
     flexDirection: 'row',
@@ -308,22 +384,88 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '700',
   },
-  sectionTitle: {
-    fontSize: 18,
+  statsRow: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+    marginBottom: Spacing.four,
+  },
+  statCard: {
+    flex: 1,
+    borderRadius: Spacing.two,
+    padding: Spacing.three,
+    alignItems: 'center',
+    gap: Spacing.one,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  statEmoji: {
+    fontSize: 28,
+    marginBottom: Spacing.half,
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#fff',
+  },
+  statLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.9)',
+    textTransform: 'uppercase',
+  },
+  statMini: {
+    marginTop: Spacing.one,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: Spacing.two,
+    paddingVertical: Spacing.half,
+    borderRadius: Spacing.one,
+  },
+  statMiniText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  actionSection: {
+    marginBottom: Spacing.four,
+  },
+  actionSectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: Spacing.two,
+  },
+  macroSectionTitle: {
+    fontSize: 16,
     fontWeight: '700',
     marginBottom: Spacing.three,
+    marginTop: Spacing.two,
+    color: '#667eea',
+  },
+  logSection: {
     marginTop: Spacing.three,
+  },
+  logSectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: Spacing.three,
   },
   macrosGrid: {
     gap: Spacing.two,
     marginBottom: Spacing.four,
   },
   macroCard: {
-    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+    backgroundColor: 'rgba(0, 0, 0, 0.02)',
     borderRadius: Spacing.two,
     padding: Spacing.three,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.08)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(102, 126, 234, 0.15)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   macroHeader: {
     flexDirection: 'row',
@@ -373,21 +515,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: Spacing.two,
     marginBottom: Spacing.four,
-    marginTop: Spacing.two,
   },
   actionButton: {
     flex: 1,
     paddingVertical: Spacing.three,
+    paddingHorizontal: Spacing.three,
     borderRadius: Spacing.two,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.one,
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+    gap: Spacing.two,
     flexDirection: 'row',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 5,
   },
   addFoodButton: {
     backgroundColor: '#4ECDC4',
@@ -396,25 +538,39 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFE66D',
   },
   actionButtonEmoji: {
-    fontSize: 20,
+    fontSize: 24,
+    marginTop: Spacing.half,
   },
   actionButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#fff',
+  },
+  actionButtonSubtext: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: Spacing.half,
   },
   emptyState: {
     alignItems: 'center',
     paddingVertical: Spacing.six,
     gap: Spacing.two,
+    backgroundColor: 'rgba(102, 126, 234, 0.05)',
+    borderRadius: Spacing.three,
+    marginVertical: Spacing.four,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: 'rgba(102, 126, 234, 0.2)',
   },
   emptyEmoji: {
-    fontSize: 60,
+    fontSize: 64,
     marginBottom: Spacing.two,
   },
   emptyText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
+    color: '#667eea',
   },
   emptySubtext: {
     fontSize: 14,
@@ -426,11 +582,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: Spacing.three,
     paddingHorizontal: Spacing.three,
-    backgroundColor: 'rgba(0, 0, 0, 0.02)',
+    backgroundColor: 'rgba(102, 126, 234, 0.04)',
     borderRadius: Spacing.two,
     marginBottom: Spacing.two,
     borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.05)',
+    borderColor: 'rgba(102, 126, 234, 0.1)',
+    shadowColor: '#667eea',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   entryLeft: {
     flexDirection: 'row',
@@ -453,9 +614,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   entryName: {
-    fontWeight: '600',
-    fontSize: 14,
+    fontWeight: '700',
+    fontSize: 15,
     marginBottom: Spacing.one,
+    color: '#667eea',
   },
   entryMacros: {
     fontSize: 11,
