@@ -9,7 +9,12 @@ export interface AnalyzedFood {
   confidence: 'high' | 'medium' | 'low';
 }
 
-const client = new Anthropic();
+const apiKey = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY;
+
+const client = new Anthropic({
+  apiKey: apiKey,
+  dangerouslyAllowBrowser: true, // Required for browser-based apps
+});
 
 export const PhotoAnalysisService = {
   analyzeFood: async (imageBase64: string): Promise<AnalyzedFood[]> => {
