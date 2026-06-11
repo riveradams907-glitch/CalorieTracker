@@ -349,6 +349,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     fontSize: 16,
+    color: '#000',
+    backgroundColor: '#fff',
   },
   genderButtons: {
     flexDirection: 'row',
