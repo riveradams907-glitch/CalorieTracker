@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import AppTabs from '@/components/app-tabs';
 import { AuthProvider, useAuth } from '@/context/auth-context';
+import { SettingsProvider } from '@/context/settings-context';
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
@@ -53,7 +54,9 @@ function AuthStack() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <RootLayoutNav />
+      <SettingsProvider>
+        <RootLayoutNav />
+      </SettingsProvider>
     </AuthProvider>
   );
 }
