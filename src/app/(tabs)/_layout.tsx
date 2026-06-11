@@ -36,6 +36,14 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="photo"
+        options={{
+          title: 'Photo',
+          tabBarLabel: 'Photo',
+          tabBarIcon: ({ color }) => <TabBarIcon name="photo" color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
@@ -51,5 +59,11 @@ function TabBarIcon(props: {
   name: string;
   color: string;
 }) {
-  return <div style={{ fontSize: 24 }}>{props.name === 'home' ? '🏠' : props.name === 'stats' ? '📊' : '👤'}</div>;
+  const icons: { [key: string]: string } = {
+    home: '🏠',
+    stats: '📊',
+    photo: '📸',
+    user: '👤',
+  };
+  return <div style={{ fontSize: 24 }}>{icons[props.name] || '❓'}</div>;
 }
