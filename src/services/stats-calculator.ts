@@ -17,6 +17,33 @@ export interface CalculatedGoals {
   tdee: number;
 }
 
+/**
+ * Macro Calculation Methodology
+ * ============================
+ *
+ * Based on scientific research from:
+ * - International Society of Sports Nutrition (ISSN)
+ * - Renaissance Periodization
+ * - Layne Norton's evidence-based nutrition research
+ *
+ * PROTEIN (Basis: body weight)
+ * - Weight loss: 1.0g per lb (preserves muscle in deficit)
+ * - Muscle gain: 0.9g per lb (optimal for hypertrophy)
+ * - Maintenance: 0.8g per lb (sufficient for healthy adults)
+ * - Max cap: 1.2g per lb (diminishing returns above this)
+ *
+ * FAT (Basis: body weight & hormone health)
+ * - Weight loss: 0.4g per lb (maximizes satiety in deficit)
+ * - Muscle gain: 0.35g per lb (supports hormone production)
+ * - Maintenance: 0.35g per lb (standard approach)
+ * - Range: 0.25-0.5g per lb (hormonal and health boundaries)
+ *
+ * CARBS (Calculated as remainder)
+ * - Most flexible macro, varies by individual tolerance
+ * - Fills remaining calories after protein and fat
+ * - Minimum 50g for CNS function and fiber
+ */
+
 // Unit conversion utilities
 export const UnitConverter = {
   // Height conversions
@@ -89,23 +116,69 @@ export const StatsCalculator = {
     return Math.max(Math.round(dailyCalories), 1200); // Minimum 1200 calories
   },
 
-  // Calculate macro split
+  // Calculate macro split using evidence-based approach
+  // Based on research from Renaissance Periodization, ISSN, and Layne Norton
   calculateMacros: (stats: UserStats): CalculatedGoals => {
     const bmr = StatsCalculator.calculateBMR(stats);
     const tdee = StatsCalculator.calculateTDEE(stats);
     const dailyCalories = StatsCalculator.calculateDailyCalories(stats);
 
-    // Standard macro split: 30% protein, 40% carbs, 30% fat
-    // High protein: 35% protein, 35% carbs, 30% fat
-    const macroSplit = stats.goal === 'lose'
-      ? { protein: 0.35, carbs: 0.35, fat: 0.30 } // Higher protein for satiety
-      : { protein: 0.30, carbs: 0.40, fat: 0.30 };
+    // Calculate protein based on body weight and goal
+    // Research shows: 0.7-1.0g per lb (1.5-2.2g per kg) is optimal for muscle retention/growth
+    const weightLbs = stats.weight * 2.20462;
+    let proteinGrams = 0;
+
+    if (stats.goal === 'lose') {
+      // Higher protein for satiety and muscle preservation during deficit
+      // 1.0g per lb of body weight
+      proteinGrams = Math.round(weightLbs * 1.0);
+    } else if (stats.goal === 'gain') {
+      // Muscle gain requires adequate protein
+      // 0.8-1.0g per lb, using 0.9 as balanced approach
+      proteinGrams = Math.round(weightLbs * 0.9);
+    } else {
+      // Maintenance - moderate protein
+      // 0.8g per lb
+      proteinGrams = Math.round(weightLbs * 0.8);
+    }
+
+    // Cap protein at max (upper limit is ~1.2g per lb)
+    proteinGrams = Math.min(proteinGrams, Math.round(weightLbs * 1.2));
+
+    // Calculate fats based on goal
+    // Research shows minimum 0.25g per lb, maximum 0.5g per lb
+    const proteinCalories = proteinGrams * 4;
+    let fatGrams = 0;
+
+    if (stats.goal === 'lose') {
+      // Higher fat for hormone health and satiety during deficit
+      // 0.4g per lb
+      fatGrams = Math.round(weightLbs * 0.4);
+    } else if (stats.goal === 'gain') {
+      // Moderate fat for hormone production and calorie surplus
+      // 0.35g per lb
+      fatGrams = Math.round(weightLbs * 0.35);
+    } else {
+      // Maintenance - standard approach
+      // 0.35g per lb
+      fatGrams = Math.round(weightLbs * 0.35);
+    }
+
+    // Clamp fats between 0.25-0.5g per lb (55-110g per 100kg person)
+    const minFat = Math.round(weightLbs * 0.25);
+    const maxFat = Math.round(weightLbs * 0.5);
+    fatGrams = Math.max(minFat, Math.min(fatGrams, maxFat));
+
+    // Remaining calories go to carbs (most flexible macro)
+    const fatCalories = fatGrams * 9;
+    const carbCalories = dailyCalories - proteinCalories - fatCalories;
+    const carbsGrams = Math.round(carbCalories / 4);
 
     return {
       dailyCalories,
-      proteinGrams: Math.round((dailyCalories * macroSplit.protein) / 4), // 4 cal per gram
-      carbsGrams: Math.round((dailyCalories * macroSplit.carbs) / 4), // 4 cal per gram
-      fatGrams: Math.round((dailyCalories * macroSplit.fat) / 9), // 9 cal per gram
+      proteinGrams: Math.max(proteinGrams, 50), // Minimum 50g protein
+      carbsGrams: Math.max(carbsGrams, 50), // Minimum 50g carbs
+      fatGrams: Math.max(fatGrams, 25), // Minimum 25g fat
       bmr: Math.round(bmr),
       tdee,
     };
