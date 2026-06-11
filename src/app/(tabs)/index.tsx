@@ -215,10 +215,6 @@ export default function HomeScreen() {
       </SafeAreaView>
     </ThemedView>
   );
-        </ScrollView>
-      </SafeAreaView>
-    </ThemedView>
-  );
 }
 
 function StatCard({ label, value, goal, emoji, bgColor }: any) {
@@ -274,7 +270,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    backgroundColor: '#667eea',
     borderRadius: Spacing.three,
     padding: Spacing.four,
     marginBottom: Spacing.four,
