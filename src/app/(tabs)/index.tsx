@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, ScrollView, FlatList, View, Dimensions } from 'react-native';
+import { StyleSheet, TouchableOpacity, ScrollView, FlatList, View, Dimensions, Image, ImageBackground } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useState, useCallback } from 'react';
@@ -9,6 +9,7 @@ import { useAuth } from '@/context/auth-context';
 import { useSettings } from '@/context/settings-context';
 import { FoodService, FoodEntry } from '@/services/food-service';
 import { Spacing } from '@/constants/theme';
+import { FitnessImages } from '@/services/image-service';
 
 const { width } = Dimensions.get('window');
 
@@ -64,17 +65,19 @@ export default function HomeScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView showsVerticalScrollIndicator={false}>
-          {/* Fitness Hero Banner */}
-          <ThemedView style={styles.heroBanner}>
+          {/* Fitness Hero Banner with Background Image */}
+          <ImageBackground
+            source={{ uri: FitnessImages.hero }}
+            style={styles.heroBanner}
+            imageStyle={styles.heroBannerImage}
+          >
+            <View style={styles.heroBannerOverlay} />
             <ThemedView style={styles.heroContent}>
               <ThemedText style={styles.heroMessage}>{getMotivationalMessage()}</ThemedText>
               <ThemedText style={styles.heroName}>{user?.name.split(' ')[0]}</ThemedText>
               <ThemedText style={styles.heroSubtitle}>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</ThemedText>
             </ThemedView>
-            <ThemedView style={styles.heroEmoji}>
-              <ThemedText style={styles.heroBigEmoji}>🏋️</ThemedText>
-            </ThemedView>
-          </ThemedView>
+          </ImageBackground>
 
           {/* Main Calorie Card - Enhanced */}
           <ThemedView style={styles.calorieCard}>
@@ -105,11 +108,29 @@ export default function HomeScreen() {
             </ThemedView>
           </ThemedView>
 
-          {/* Quick Stats Cards */}
+          {/* Quick Stats Cards with Images */}
           <ThemedView style={styles.statsRow}>
-            <StatCard label="Protein" value={Math.round(macros.protein)} goal={settings.proteinGoal} emoji="🥚" bgColor="#FF6B6B" />
-            <StatCard label="Carbs" value={Math.round(macros.carbs)} goal={settings.carbsGoal} emoji="🌾" bgColor="#4ECDC4" />
-            <StatCard label="Fat" value={Math.round(macros.fat)} goal={settings.fatGoal} emoji="🥑" bgColor="#FFE66D" />
+            <StatCardWithImage
+              label="Protein"
+              value={Math.round(macros.protein)}
+              goal={settings.proteinGoal}
+              bgColor="#FF6B6B"
+              image={FitnessImages.strength}
+            />
+            <StatCardWithImage
+              label="Carbs"
+              value={Math.round(macros.carbs)}
+              goal={settings.carbsGoal}
+              bgColor="#4ECDC4"
+              image={FitnessImages.nutrition}
+            />
+            <StatCardWithImage
+              label="Fat"
+              value={Math.round(macros.fat)}
+              goal={settings.fatGoal}
+              bgColor="#FFE66D"
+              image={FitnessImages.dumbbells}
+            />
           </ThemedView>
 
           {/* Fitness Action Section */}
@@ -218,6 +239,25 @@ export default function HomeScreen() {
   );
 }
 
+function StatCardWithImage({ label, value, goal, bgColor, image }: any) {
+  const percentage = Math.min((value / goal) * 100, 100);
+
+  return (
+    <ImageBackground
+      source={{ uri: image }}
+      style={[styles.statCard, { backgroundColor: bgColor }]}
+      imageStyle={styles.statCardImage}
+    >
+      <View style={styles.statCardOverlay} />
+      <ThemedText style={styles.statValue}>{value}g</ThemedText>
+      <ThemedText style={styles.statLabel}>{label}</ThemedText>
+      <ThemedView style={styles.statMini}>
+        <ThemedText style={styles.statMiniText}>{Math.round(percentage)}%</ThemedText>
+      </ThemedView>
+    </ImageBackground>
+  );
+}
+
 function StatCard({ label, value, goal, emoji, bgColor }: any) {
   const percentage = Math.min((value / goal) * 100, 100);
 
@@ -271,19 +311,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#667eea',
     borderRadius: Spacing.three,
     padding: Spacing.four,
     marginBottom: Spacing.four,
     marginTop: Spacing.two,
-    shadowColor: '#667eea',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 8,
+    overflow: 'hidden',
+    minHeight: 200,
+  },
+  heroBannerImage: {
+    borderRadius: Spacing.three,
+  },
+  heroBannerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: Spacing.three,
   },
   heroContent: {
     flex: 1,
+    zIndex: 1,
   },
   heroMessage: {
     fontSize: 14,
@@ -391,34 +441,54 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.two,
     padding: Spacing.three,
     alignItems: 'center',
+    justifyContent: 'center',
     gap: Spacing.one,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.15,
     shadowRadius: 8,
-    elevation: 4,
+    elevation: 5,
+    overflow: 'hidden',
+    minHeight: 140,
+  },
+  statCardImage: {
+    borderRadius: Spacing.two,
+  },
+  statCardOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: Spacing.two,
   },
   statEmoji: {
     fontSize: 28,
     marginBottom: Spacing.half,
   },
   statValue: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '800',
     color: '#fff',
+    zIndex: 2,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
   statLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#fff',
     textTransform: 'uppercase',
+    zIndex: 2,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
   statMini: {
     marginTop: Spacing.one,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
     paddingHorizontal: Spacing.two,
     paddingVertical: Spacing.half,
     borderRadius: Spacing.one,
+    zIndex: 2,
   },
   statMiniText: {
     fontSize: 10,
