@@ -4,7 +4,6 @@ import { useColorScheme, ActivityIndicator, View } from 'react-native';
 import { useEffect } from 'react';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
 import { AuthProvider, useAuth } from '@/context/auth-context';
 import { SettingsProvider } from '@/context/settings-context';
 
@@ -17,11 +16,11 @@ function RootLayoutNav() {
   useEffect(() => {
     if (isLoading) return;
 
-    const inAuthGroup = segments[0] === '(auth)';
+    const isAuthRoute = segments[0] === 'login' || segments[0] === 'signup';
 
-    if (!user && !inAuthGroup) {
+    if (!user && !isAuthRoute) {
       router.replace('/login');
-    } else if (user && inAuthGroup) {
+    } else if (user && isAuthRoute) {
       router.replace('/(tabs)');
     }
   }, [user, isLoading, segments]);
@@ -37,17 +36,12 @@ function RootLayoutNav() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <AnimatedSplashOverlay />
-      {user ? <AppTabs /> : <AuthStack />}
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="login" />
+        <Stack.Screen name="signup" />
+        <Stack.Screen name="(tabs)" />
+      </Stack>
     </ThemeProvider>
-  );
-}
-
-function AuthStack() {
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="login" />
-      <Stack.Screen name="signup" />
-    </Stack>
   );
 }
 
