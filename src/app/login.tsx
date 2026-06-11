@@ -10,7 +10,7 @@ import { Spacing } from '@/constants/theme';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login, isLoading } = useAuth();
+  const { login, loginAsGuest, isLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -25,6 +25,15 @@ export default function LoginScreen() {
       router.replace('/(tabs)');
     } catch (err) {
       setError('Login failed. Please try again.');
+    }
+  };
+
+  const handleGuestLogin = async () => {
+    try {
+      await loginAsGuest();
+      router.replace('/(tabs)');
+    } catch (err) {
+      setError('Guest login failed. Please try again.');
     }
   };
 
@@ -72,6 +81,14 @@ export default function LoginScreen() {
               ) : (
                 <ThemedText style={styles.buttonText}>Login</ThemedText>
               )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.guestButton, isLoading && styles.buttonDisabled]}
+              onPress={handleGuestLogin}
+              disabled={isLoading}
+            >
+              <ThemedText style={styles.guestButtonText}>Continue as Guest</ThemedText>
             </TouchableOpacity>
           </ThemedView>
 
@@ -137,6 +154,19 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  guestButton: {
+    backgroundColor: 'rgba(0, 122, 255, 0.2)',
+    paddingVertical: Spacing.three,
+    borderRadius: Spacing.two,
+    borderWidth: 1,
+    borderColor: '#007AFF',
+    alignItems: 'center',
+  },
+  guestButtonText: {
+    color: '#007AFF',
     fontSize: 16,
     fontWeight: '600',
   },
