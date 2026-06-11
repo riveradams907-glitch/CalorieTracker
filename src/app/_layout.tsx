@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { AuthProvider, useAuth } from '@/context/auth-context';
 import { SettingsProvider } from '@/context/settings-context';
+import { StatsProvider, useStats } from '@/context/stats-context';
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
@@ -49,7 +50,9 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <SettingsProvider>
-        <RootLayoutNav />
+        <StatsProvider>
+          <RootLayoutNav />
+        </StatsProvider>
       </SettingsProvider>
     </AuthProvider>
   );
