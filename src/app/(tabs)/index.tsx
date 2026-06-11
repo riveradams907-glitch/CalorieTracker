@@ -9,7 +9,6 @@ import { useAuth } from '@/context/auth-context';
 import { useSettings } from '@/context/settings-context';
 import { FoodService, FoodEntry } from '@/services/food-service';
 import { Spacing } from '@/constants/theme';
-import { FitnessImages } from '@/services/image-service';
 
 const { width } = Dimensions.get('window');
 
@@ -65,19 +64,38 @@ export default function HomeScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView showsVerticalScrollIndicator={false}>
-          {/* Fitness Hero Banner with Background Image */}
-          <ImageBackground
-            source={{ uri: FitnessImages.hero }}
-            style={styles.heroBanner}
-            imageStyle={styles.heroBannerImage}
-          >
-            <View style={styles.heroBannerOverlay} />
-            <ThemedView style={styles.heroContent}>
-              <ThemedText style={styles.heroMessage}>{getMotivationalMessage()}</ThemedText>
-              <ThemedText style={styles.heroName}>{user?.name.split(' ')[0]}</ThemedText>
-              <ThemedText style={styles.heroSubtitle}>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</ThemedText>
+          {/* Header */}
+          <ThemedView style={styles.header}>
+            <ThemedText style={styles.headerTitle}>Food Diary</ThemedText>
+            <ThemedText style={styles.headerDate}>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</ThemedText>
+          </ThemedView>
+
+          {/* Daily Summary Card */}
+          <ThemedView style={styles.summaryCard}>
+            <ThemedView style={styles.summaryLeft}>
+              <ThemedText style={styles.summaryLabel}>Your Calorie Goal</ThemedText>
+              <ThemedView style={styles.calorieRow}>
+                <ThemedText style={styles.calorieNumber}>{totalCalories}</ThemedText>
+                <ThemedText style={styles.calorieDivider}>/</ThemedText>
+                <ThemedText style={styles.calorieGoal}>{settings.dailyCalorieGoal}</ThemedText>
+              </ThemedView>
+              <ThemedText style={styles.remaining}>
+                {remainingCalories > 0 ? `${Math.round(remainingCalories)} remaining` : 'Over by ' + Math.abs(Math.round(remainingCalories))}
+              </ThemedText>
             </ThemedView>
-          </ImageBackground>
+            <ThemedView style={styles.summaryRight}>
+              <View style={styles.progressCircle}>
+                <View style={[styles.progressCircleFill, { width: `${caloriePercentage}%` }]} />
+              </View>
+            </ThemedView>
+          </ThemedView>
+
+          {/* Progress Bar */}
+          <View style={styles.progressBarContainer}>
+            <View style={styles.progressBar}>
+              <View style={[styles.progressFill, { width: `${caloriePercentage}%` }]} />
+            </View>
+          </View>
 
           {/* Main Calorie Card - Enhanced */}
           <ThemedView style={styles.calorieCard}>
@@ -108,87 +126,48 @@ export default function HomeScreen() {
             </ThemedView>
           </ThemedView>
 
-          {/* Quick Stats Cards with Images */}
-          <ThemedView style={styles.statsRow}>
-            <StatCardWithImage
+          {/* Macronutrients Grid */}
+          <ThemedText style={styles.sectionTitle}>Macronutrients</ThemedText>
+          <ThemedView style={styles.macroGrid}>
+            <MacroGridCard
               label="Protein"
               value={Math.round(macros.protein)}
               goal={settings.proteinGoal}
-              bgColor="#FF6B6B"
-              image={FitnessImages.strength}
+              color="#E91E63"
             />
-            <StatCardWithImage
+            <MacroGridCard
               label="Carbs"
               value={Math.round(macros.carbs)}
               goal={settings.carbsGoal}
-              bgColor="#4ECDC4"
-              image={FitnessImages.nutrition}
+              color="#2196F3"
             />
-            <StatCardWithImage
+            <MacroGridCard
               label="Fat"
               value={Math.round(macros.fat)}
               goal={settings.fatGoal}
-              bgColor="#FFE66D"
-              image={FitnessImages.dumbbells}
+              color="#FF9800"
             />
           </ThemedView>
 
-          {/* Fitness Action Section */}
-          <ThemedView style={styles.actionSection}>
-            <ThemedText style={styles.actionSectionTitle}>Quick Actions</ThemedText>
-            <ThemedView style={styles.actionButtons}>
-              <TouchableOpacity
-                style={[styles.actionButton, styles.addFoodButton]}
-                onPress={() => router.push('/(tabs)/add-food')}
-              >
-                <ThemedText style={styles.actionButtonEmoji}>➕</ThemedText>
-                <ThemedView>
-                  <ThemedText style={styles.actionButtonText}>Add Food</ThemedText>
-                  <ThemedText style={styles.actionButtonSubtext}>Search database</ThemedText>
-                </ThemedView>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.actionButton, styles.photoButton]}
-                onPress={() => router.push('/(tabs)/photo')}
-              >
-                <ThemedText style={styles.actionButtonEmoji}>📸</ThemedText>
-                <ThemedView>
-                  <ThemedText style={styles.actionButtonText}>Scan Meal</ThemedText>
-                  <ThemedText style={styles.actionButtonSubtext}>AI powered</ThemedText>
-                </ThemedView>
-              </TouchableOpacity>
-            </ThemedView>
+          {/* Quick Add Buttons */}
+          <ThemedView style={styles.quickAddSection}>
+            <TouchableOpacity
+              style={styles.quickAddButton}
+              onPress={() => router.push('/(tabs)/add-food')}
+            >
+              <ThemedText style={styles.quickAddButtonText}>+ Add Food</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.quickAddButton, styles.quickAddButtonSecondary]}
+              onPress={() => router.push('/(tabs)/photo')}
+            >
+              <ThemedText style={styles.quickAddButtonTextSecondary}>📸 Scan Meal</ThemedText>
+            </TouchableOpacity>
           </ThemedView>
 
-          {/* Macros Breakdown Section */}
-          <ThemedText style={styles.macroSectionTitle}>Macronutrients Breakdown</ThemedText>
-          <ThemedView style={styles.macrosGrid}>
-            <MacroCard
-              label="Protein"
-              current={Math.round(macros.protein)}
-              goal={settings.proteinGoal}
-              emoji="🥚"
-              color="#FF6B6B"
-            />
-            <MacroCard
-              label="Carbs"
-              current={Math.round(macros.carbs)}
-              goal={settings.carbsGoal}
-              emoji="🌾"
-              color="#4ECDC4"
-            />
-            <MacroCard
-              label="Fat"
-              current={Math.round(macros.fat)}
-              goal={settings.fatGoal}
-              emoji="🥑"
-              color="#FFE66D"
-            />
-          </ThemedView>
-
-          {/* Today's Log Section */}
+          {/* Food Log Section */}
           <ThemedView style={styles.logSection}>
-            <ThemedText style={styles.logSectionTitle}>📋 Today's Log</ThemedText>
+            <ThemedText style={styles.logSectionTitle}>Food Entries</ThemedText>
 
             {todayEntries.length === 0 ? (
               <ThemedView style={styles.emptyState}>
@@ -239,22 +218,20 @@ export default function HomeScreen() {
   );
 }
 
-function StatCardWithImage({ label, value, goal, bgColor, image }: any) {
+function MacroGridCard({ label, value, goal, color }: any) {
   const percentage = Math.min((value / goal) * 100, 100);
 
   return (
-    <ImageBackground
-      source={{ uri: image }}
-      style={[styles.statCard, { backgroundColor: bgColor }]}
-      imageStyle={styles.statCardImage}
-    >
-      <View style={styles.statCardOverlay} />
-      <ThemedText style={styles.statValue}>{value}g</ThemedText>
-      <ThemedText style={styles.statLabel}>{label}</ThemedText>
-      <ThemedView style={styles.statMini}>
-        <ThemedText style={styles.statMiniText}>{Math.round(percentage)}%</ThemedText>
-      </ThemedView>
-    </ImageBackground>
+    <ThemedView style={styles.macroGridCard}>
+      <ThemedView style={[styles.macroColorBar, { backgroundColor: color }]} />
+      <ThemedText style={styles.macroGridLabel}>{label}</ThemedText>
+      <ThemedText style={styles.macroGridValue}>{value}g</ThemedText>
+      <ThemedText style={styles.macroGridGoal}>Goal: {goal}g</ThemedText>
+      <View style={styles.macroGridProgressBar}>
+        <View style={[styles.macroGridProgressFill, { width: `${percentage}%`, backgroundColor: color }]} />
+      </View>
+      <ThemedText style={styles.macroGridPercent}>{Math.round(percentage)}%</ThemedText>
+    </ThemedView>
   );
 }
 
@@ -302,10 +279,217 @@ function MacroCard({ label, current, goal, emoji, color }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F5F5F5',
   },
   safeArea: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: Spacing.three,
+  },
+  header: {
+    paddingVertical: Spacing.three,
+    paddingHorizontal: Spacing.two,
+    marginBottom: Spacing.two,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#333333',
+    marginBottom: Spacing.half,
+  },
+  headerDate: {
+    fontSize: 14,
+    color: '#999999',
+    fontWeight: '500',
+  },
+  summaryCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: Spacing.four,
+    marginBottom: Spacing.three,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  summaryLeft: {
+    flex: 1,
+  },
+  summaryRight: {
+    marginLeft: Spacing.three,
+    alignItems: 'center',
+  },
+  summaryLabel: {
+    fontSize: 12,
+    color: '#999999',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    marginBottom: Spacing.one,
+  },
+  calorieRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: Spacing.one,
+  },
+  calorieNumber: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#FF6B35',
+  },
+  calorieDivider: {
+    fontSize: 24,
+    color: '#CCCCCC',
+    marginHorizontal: Spacing.one,
+  },
+  calorieGoal: {
+    fontSize: 20,
+    color: '#999999',
+    fontWeight: '600',
+  },
+  remaining: {
+    fontSize: 13,
+    color: '#666666',
+    fontWeight: '500',
+  },
+  progressCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#E8E8E8',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  progressCircleFill: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    height: '100%',
+    backgroundColor: '#FF6B35',
+  },
+  progressBarContainer: {
+    paddingHorizontal: Spacing.three,
+    marginBottom: Spacing.four,
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: '#E8E8E8',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#FF6B35',
+    borderRadius: 2,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#333333',
+    marginTop: Spacing.three,
+    marginBottom: Spacing.two,
+    paddingHorizontal: Spacing.three,
+  },
+  macroGrid: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    marginBottom: Spacing.four,
+  },
+  macroGridCard: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: Spacing.two,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  macroColorBar: {
+    height: 4,
+    borderRadius: 2,
+    marginBottom: Spacing.one,
+  },
+  macroGridLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#999999',
+    textTransform: 'uppercase',
+    marginBottom: Spacing.half,
+  },
+  macroGridValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#333333',
+  },
+  macroGridGoal: {
+    fontSize: 11,
+    color: '#999999',
+    marginBottom: Spacing.one,
+  },
+  macroGridProgressBar: {
+    height: 3,
+    backgroundColor: '#E8E8E8',
+    borderRadius: 2,
+    overflow: 'hidden',
+    marginBottom: Spacing.one,
+  },
+  macroGridProgressFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  macroGridPercent: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#666666',
+  },
+  quickAddSection: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    marginBottom: Spacing.four,
+  },
+  quickAddButton: {
+    flex: 1,
+    backgroundColor: '#FF6B35',
+    borderRadius: 8,
+    paddingVertical: Spacing.three,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#FF6B35',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  quickAddButtonSecondary: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#FF6B35',
+  },
+  quickAddButtonText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  quickAddButtonTextSecondary: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FF6B35',
+  },
+  logSection: {
+    paddingHorizontal: Spacing.three,
+  },
+  logSectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#333333',
+    marginBottom: Spacing.two,
   },
   heroBanner: {
     flexDirection: 'row',
@@ -659,16 +843,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: Spacing.three,
     paddingHorizontal: Spacing.three,
-    backgroundColor: '#0F1A3D',
-    borderRadius: 0,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
     marginBottom: Spacing.two,
     borderWidth: 1,
-    borderColor: '#0066FF',
-    shadowColor: '#0066FF',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 2,
+    borderColor: '#E8E8E8',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 2,
+    elevation: 1,
   },
   entryLeft: {
     flexDirection: 'row',
@@ -680,7 +864,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+    backgroundColor: '#F5F5F5',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -693,17 +877,17 @@ const styles = StyleSheet.create({
   entryName: {
     fontWeight: '700',
     fontSize: 15,
-    marginBottom: Spacing.one,
-    color: '#00D4FF',
+    marginBottom: Spacing.half,
+    color: '#333333',
   },
   entryMacros: {
     fontSize: 11,
-    opacity: 0.6,
-    marginBottom: Spacing.one,
+    color: '#999999',
+    marginBottom: Spacing.half,
   },
   entryTime: {
-    fontSize: 11,
-    opacity: 0.5,
+    fontSize: 10,
+    color: '#CCCCCC',
   },
   entryRight: {
     alignItems: 'flex-end',
@@ -712,13 +896,13 @@ const styles = StyleSheet.create({
   entryCalories: {
     fontWeight: '700',
     fontSize: 16,
-    color: '#00D4FF',
+    color: '#FF6B35',
   },
   deleteButton: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#ff4444',
+    backgroundColor: '#FF6B35',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -727,5 +911,28 @@ const styles = StyleSheet.create({
     fontSize: 20,
     lineHeight: 20,
     fontWeight: '600',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: Spacing.six,
+    gap: Spacing.two,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    marginVertical: Spacing.four,
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+  },
+  emptyEmoji: {
+    fontSize: 64,
+    marginBottom: Spacing.two,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#333333',
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#999999',
   },
 });
